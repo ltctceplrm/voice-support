@@ -173,8 +173,8 @@ actions:
   target:
     entity_id: '{{ mass_player_entity_id }}'
 - alias: Send back the response
-    set_conversation_response: >-
-      {{ 'Je mélange' if 'mélanger' in trigger.sentence | lower  else 'Je
-      joues'}} {{ trigger.slots.media_name }} {{ '' if 'mélanger' in
-      trigger.sentence | lower else ''}} sur {{ mass_player_name }}
+  set_conversation_response: >-
+    {{ 'Je mélange' if 'mélanger' in trigger.sentence | lower  else 'Je
+    joues'}} {{ trigger.slots.media_name }} {{ '' if 'mélanger' in
+    trigger.sentence | lower else ''}} sur {{ mass_player_name }}
 mode: single
