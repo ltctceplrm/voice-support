@@ -2,7 +2,7 @@ blueprint:
   domain: automation
   name: Music Assistant - Support de voix en mode local - Blueprint
   source_url: https://github.com/music-assistant/voice-support/blob/main/local-assist-blueprint/mass_assist_blueprint_fr.yaml
-  description: ' ![Image](https://github.com/music-assistant/voice-support/blob/main/assets/music-assistant.png?raw=true)
+  description: " ![Image](https://github.com/music-assistant/voice-support/blob/main/assets/music-assistant.png?raw=true)
 
     # Lire des fichiers multimédias à l'aide de commandes vocales
 
@@ -22,7 +22,7 @@ blueprint:
 
 
     ### Utilisation
-    ```'
+    ```"
   input:
     default_player_entity_id_input:
       name: Default Media Player
@@ -36,7 +36,7 @@ blueprint:
     trigger_response_settings:
       name: Trigger and response settings for Assist
       icon: mdi:chat
-      description: 'You can change the existing triggers or add more triggers in these
+      description: "You can change the existing triggers or add more triggers in these
         settings. Put text between square brackets [ ] to make it optional. With round
         brackets ( ) and a pipe character | you can enter multiple values which are
         treated as ''or''. { query } is a wildcard value which will contain the requested
@@ -44,7 +44,7 @@ blueprint:
 
         You can also set the responses Assist will give. It uses jinja templates which
         will be replaced with the media information and player name of the Music Assistant
-        player.'
+        player."
       collapsed: true
       input:
         album_trigger:
@@ -55,10 +55,10 @@ blueprint:
               multiline: false
               multiple: true
           default:
-          - (mélanger|lire|écouter|jouer|play) [la| le
+          - "(mélanger|lire|écouter|jouer|play) [la| le
             |l'](album|EP|disque|compilation|single) {media_name} [par [le |la
             |l'](artiste|groupe|formation) {artist}] [(dans|sur) [le
-            ]{area_or_player_name}][ (avec) {radio_mode}]
+            ]{area_or_player_name}][ (avec) {radio_mode}]"
         track_trigger:
           name: Track trigger
           description: The trigger sentences to request a specific track.
@@ -67,9 +67,9 @@ blueprint:
               multiline: false
               multiple: true
           default:
-          - (mélanger|lire|écouter|jouer|play) [le |la ](morceau|chanson)
+          - "(mélanger|lire|écouter|jouer|play) [le |la ](morceau|chanson)
             {media_name} [par [le |la |l'](artiste|groupe|formation) {artist}]
-            [(dans|sur) [le ]{area_or_player_name}][ (avec|sur) {radio_mode}]
+            [(dans|sur) [le ]{area_or_player_name}][ (avec|sur) {radio_mode}]"
         artist_trigger:
           name: Artist trigger
           description: The trigger sentences to request music from a specific artist.
@@ -78,9 +78,9 @@ blueprint:
               multiline: false
               multiple: true
           default:
-          - (mélanger|lire|écouter|jouer|play) [le |l'|la
+          - "(mélanger|lire|écouter|jouer|play) [le |l'|la
             ](artiste|groupe|formation) {media_name} [(dans|sur) [le
-            ]{area_or_player_name}][ (avec) {mode_radio}]
+            ]{area_or_player_name}][ (avec) {mode_radio}]"
         audiobook_trigger:
           name: Audiobook trigger
           description: The trigger sentences to request an audiobook.
@@ -89,8 +89,8 @@ blueprint:
               multiline: false
               multiple: true
           default:
-          - (écouter|jouer|play) [le |l'|la ](livre|audio livre|livre audio) {media_name} [(in|on|using)
-            [the ]{area_or_player_name}]
+          - "(écouter|jouer|play) [le |l'|la ](livre|audio livre|livre audio) {media_name} [(in|on|using)
+            [the ]{area_or_player_name}]"
         radio_trigger:
           name: Radio trigger
           description: The trigger sentences to request a specific radio station.
@@ -99,9 +99,9 @@ blueprint:
               multiline: false
               multiple: true
           default:
-          - (mélanger|lire|écouter|jouer|play) [le |l'|la ]((station de
+          - "(mélanger|lire|écouter|jouer|play) [le |l'|la ]((station de
             radio)|(radio)|(station)) {media_name} [(dans|sur) [la
-            ]{area_or_player_name}]
+            ]{area_or_player_name}]"
         playlist_trigger:
           name: Playlist trigger
           description: The trigger sentences to request a specific playlist.
@@ -110,42 +110,29 @@ blueprint:
               multiline: false
               multiple: true
           default:
-          - (mélanger|lire|écouter|jouer|play) [la ](liste|liste de
+          - "(mélanger|lire|écouter|jouer|play) [la ](liste|liste de
             lecture|playlist) {media_name} [(dans|sur) [la ]{area_or_player_name}][
-            (avec) {radio_mode}]
-        response_input:
-          name: Response for Assist
-          description: The response which will be given by Assist.
-          selector:
-            text:
-              multiline: false
-              multiple: false
-          default: '{{ ''Shuffling'' if ''shuffle'' in trigger.sentence | lower  else ''''}} {{ trigger.slots.media_name }} 
-            {{ '''' if ''shuffle'' in trigger.sentence | lower else ''playing''}} on {{ mass_player_name
-            }}'
+            (avec) {radio_mode}]"
 triggers:
-- trigger: conversation
-  command: !input album_trigger
-  id: album
-- trigger: conversation
-  command: !input track_trigger
-  id: track
-- trigger: conversation
-  command: !input artist_trigger
-  id: artist
-- trigger: conversation
-  command: !input audiobook_trigger
-  id: audiobook
-- trigger: conversation
-  command: !input radio_trigger
-  id: radio
-- trigger: conversation
-  command: !input playlist_trigger
-  id: playlist
+  - trigger: conversation
+    command: !input album_trigger
+    id: album
+  - trigger: conversation
+    command: !input track_trigger
+    id: track
+  - trigger: conversation
+    command: !input artist_trigger
+    id: artist
+  - trigger: conversation
+    command: !input radio_trigger
+    id: radio
+  - trigger: conversation
+    command: !input playlist_trigger
+    id: playlist
 actions:
 - alias: Define variables to be used in the automation
   variables:
-    version: 20250404
+    version: 20260601
     shuffle: '{{ ''shuffle'' in trigger.sentence | lower }}'
     default_player_entity_id: !input default_player_entity_id_input
     trigger_id: '{{ trigger.id }}'
