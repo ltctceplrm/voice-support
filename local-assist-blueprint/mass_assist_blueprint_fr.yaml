@@ -1,0 +1,193 @@
+blueprint:
+  domain: automation
+  name: Music Assistant - Support de voix en mode local - Blueprint
+  source_url: https://github.com/music-assistant/voice-support/blob/main/local-assist-blueprint/mass_assist_blueprint_fr.yaml
+  description: ' ![Image](https://github.com/music-assistant/voice-support/blob/main/assets/music-assistant.png?raw=true)
+
+    # Lire des fichiers multimédias à l'aide de commandes vocales
+
+    ### Configuration du Blueprint
+
+    #### Obligatoire
+
+    * Définissez un « Lecteur par défaut » à utiliser lorsqu'aucune cible n'est mentionnée dans la requête
+    et que la requête ne provient pas d'une zone équipée d'un lecteur Music Assistant.
+
+    #### Facultatif
+
+    * Modifiez la phrase déclencheuse ou ajoutez-en d'autres ; vous pouvez également l'utiliser pour traduire
+    la phrase dans votre propre langue.
+
+    * Modifiez les réponses ou traduisez-les dans votre propre langue.
+
+
+    ### Utilisation
+    ```'
+  input:
+    default_player_entity_id_input:
+      name: Default Media Player
+      selector:
+        entity:
+          filter:
+          - integration: music_assistant
+            domain:
+            - media_player
+          multiple: false
+    trigger_response_settings:
+      name: Trigger and response settings for Assist
+      icon: mdi:chat
+      description: 'You can change the existing triggers or add more triggers in these
+        settings. Put text between square brackets [ ] to make it optional. With round
+        brackets ( ) and a pipe character | you can enter multiple values which are
+        treated as ''or''. { query } is a wildcard value which will contain the requested
+        media and optionally the area or Music Assistant player.
+
+        You can also set the responses Assist will give. It uses jinja templates which
+        will be replaced with the media information and player name of the Music Assistant
+        player.'
+      collapsed: true
+      input:
+        album_trigger:
+          name: Album trigger
+          description: The trigger sentences to request a specific album.
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - (mélanger|lire|écouter|jouer|play) [la| le
+            |l'](album|EP|disque|compilation|single) {media_name} [par [le |la
+            |l'](artiste|groupe|formation) {artist}] [(dans|sur) [le
+            ]{area_or_player_name}][ (avec) {radio_mode}]
+        track_trigger:
+          name: Track trigger
+          description: The trigger sentences to request a specific track.
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - (mélanger|lire|écouter|jouer|play) [le |la ](morceau|chanson)
+            {media_name} [par [le |la |l'](artiste|groupe|formation) {artist}]
+            [(dans|sur) [le ]{area_or_player_name}][ (avec|sur) {radio_mode}]
+        artist_trigger:
+          name: Artist trigger
+          description: The trigger sentences to request music from a specific artist.
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - (mélanger|lire|écouter|jouer|play) [le |l'|la
+            ](artiste|groupe|formation) {media_name} [(dans|sur) [le
+            ]{area_or_player_name}][ (avec) {mode_radio}]
+        audiobook_trigger:
+          name: Audiobook trigger
+          description: The trigger sentences to request an audiobook.
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - (écouter|jouer|play) [le |l'|la ](livre|audio livre|livre audio) {media_name} [(in|on|using)
+            [the ]{area_or_player_name}]
+        radio_trigger:
+          name: Radio trigger
+          description: The trigger sentences to request a specific radio station.
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - (mélanger|lire|écouter|jouer|play) [le |l'|la ]((station de
+            radio)|(radio)|(station)) {media_name} [(dans|sur) [la
+            ]{area_or_player_name}]
+        playlist_trigger:
+          name: Playlist trigger
+          description: The trigger sentences to request a specific playlist.
+          selector:
+            text:
+              multiline: false
+              multiple: true
+          default:
+          - (mélanger|lire|écouter|jouer|play) [la ](liste|liste de
+            lecture|playlist) {media_name} [(dans|sur) [la ]{area_or_player_name}][
+            (avec) {radio_mode}]
+        response_input:
+          name: Response for Assist
+          description: The response which will be given by Assist.
+          selector:
+            text:
+              multiline: false
+              multiple: false
+          default: '{{ ''Shuffling'' if ''shuffle'' in trigger.sentence | lower  else ''''}} {{ trigger.slots.media_name }} 
+            {{ '''' if ''shuffle'' in trigger.sentence | lower else ''playing''}} on {{ mass_player_name
+            }}'
+triggers:
+- trigger: conversation
+  command: !input album_trigger
+  id: album
+- trigger: conversation
+  command: !input track_trigger
+  id: track
+- trigger: conversation
+  command: !input artist_trigger
+  id: artist
+- trigger: conversation
+  command: !input audiobook_trigger
+  id: audiobook
+- trigger: conversation
+  command: !input radio_trigger
+  id: radio
+- trigger: conversation
+  command: !input playlist_trigger
+  id: playlist
+actions:
+- alias: Define variables to be used in the automation
+  variables:
+    version: 20250404
+    shuffle: '{{ ''shuffle'' in trigger.sentence | lower }}'
+    default_player_entity_id: !input default_player_entity_id_input
+    trigger_id: '{{ trigger.id }}'
+    area_or_player_name: '{{ trigger.slots.area_or_player_name | default }}'
+    assist_device_id: '{{ trigger.device_id }}'
+    action_data:
+      media_id: '{{ trigger.slots.media_name }}'
+      media_type: '{{ ''radio'' if ''radio'' in media_name | lower else trigger_id
+        }}'
+      artist: '{{ trigger.slots.artist | default }}'
+      radio_mode: '{{ ''radio'' in trigger.slots.radio_mode | default | lower }}'
+    ma_players: '{{  integration_entities(''music_assistant'') | select(''match'', ''media_player'') | list }}'
+    player_entity_id_by_player_name: "{{ ma_players |
+      expand \n  | selectattr('name', 'match', area_or_player_name ~ '$', ignorecase=true)\n
+      \ | map(attribute='entity_id') | list }}\n"
+    player_entity_id_by_area_name: '{{ areas() | map(''area_name'') | select(''match'',
+      area_or_player_name ~ ''$'',  ignorecase=true) | map(''area_entities'') | sum(start=[])
+      | select(''in'',  ma_players) | list }}
+
+      '
+    player_entity_id_by_assist_area: '{{ area_entities(area_id(trigger.device_id))
+      | select(''in'', ma_players) | list }}
+
+      '
+    mass_player_entity_id: "{{ player_entity_id_by_player_name or player_entity_id_by_area_name
+      \nor player_entity_id_by_assist_area or [default_player_entity_id] }}\n"
+    mass_player_name: '{{ mass_player_entity_id | map(''state_attr'', ''friendly_name'')
+      | join('', '') }}'
+- alias: Send media to selected Music Assistant Player
+  action: music_assistant.play_media
+  data: '{{ dict(action_data.items() | selectattr(''1'')) }}'
+  target:
+    entity_id: '{{ mass_player_entity_id }}'
+- alias: Enable/Disable shuffle on a Music Assistant Media Player
+  action: media_player.shuffle_set
+  data:
+    shuffle: '{{ shuffle }}'
+  target:
+    entity_id: '{{ mass_player_entity_id }}'
+- alias: Send back the response
+    set_conversation_response: >-
+      {{ 'Je mélange' if 'mélanger' in trigger.sentence | lower  else 'Je
+      joues'}} {{ trigger.slots.media_name }} {{ '' if 'mélanger' in
+      trigger.sentence | lower else ''}} sur {{ mass_player_name }}
+mode: single
